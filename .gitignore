@@ -1,0 +1,4 @@
+vendor
+todo.text
+.phpunit.result.cache
+composer.lock
