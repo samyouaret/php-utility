@@ -40,7 +40,8 @@ class Collection implements CollectionInterface
 
     public function pushArray(array $array)
     {
-        $this->data = array_merge($this->data, $array);
+        // it preserves keys array_merge does note
+        $this->data = $this->data + $array;
         return $this;
     }
 
@@ -189,6 +190,12 @@ class Collection implements CollectionInterface
     public function reverse(): Collection
     {
         $array =  array_reverse($this->data, true);
+        return new Collection($array);
+    }
+
+    public function col($col, $indexKey = NULL): Collection
+    {
+        $array =  array_column($this->data, $col, $indexKey);
         return new Collection($array);
     }
 

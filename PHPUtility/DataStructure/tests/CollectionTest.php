@@ -15,6 +15,29 @@ class CollectionTest extends TestCase
         $this->collection = new Collection("one", 1);
         $this->collection->push("two", 2);
         $this->collection->push("three", 3);
+        $this->users =
+            $records = array(
+                array(
+                    'id' => 2135,
+                    'first_name' => 'John',
+                    'last_name' => 'Doe',
+                ),
+                array(
+                    'id' => 3245,
+                    'first_name' => 'Sally',
+                    'last_name' => 'Smith',
+                ),
+                array(
+                    'id' => 5342,
+                    'first_name' => 'Jane',
+                    'last_name' => 'Jones',
+                ),
+                array(
+                    'id' => 5623,
+                    'first_name' => 'Peter',
+                    'last_name' => 'Doe',
+                )
+            );
     }
 
     /** @test */
@@ -262,5 +285,28 @@ class CollectionTest extends TestCase
         $reversed =  $this->collection->reverse()->all();
         $array = ["three" => 3, "two" => 2, 'one' => 1];
         $this->assertEquals($array, $reversed);
+    }
+
+    /** @test */
+    public function get_subset_by_column_of_a_collection()
+    {
+        $usersCollection = new Collection($this->users);
+        $expected = ["John", "Sally", "Jane", "Peter"];
+        $this->assertEquals(
+            $expected,
+            $usersCollection->col('first_name')->all()
+        );
+    }
+
+    /** @test */
+    public function get_subset_by_column_of_collection_indexed_by_a_key_index()
+    {
+        $usersCollection = new Collection($this->users);
+        $expected = [2135 => "John", 3245 => "Sally", 5342 => "Jane", 5623 => "Peter"];
+        print_r($usersCollection->col('first_name', "id")->all());
+        $this->assertEquals(
+            $expected,
+            $usersCollection->col('first_name', "id")->all()
+        );
     }
 }
