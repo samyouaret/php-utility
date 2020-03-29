@@ -269,6 +269,15 @@ class CollectionTest extends TestCase
     }
 
     /** @test */
+    public function run_callback_on_some_items_must_match()
+    {
+        $this->assertTrue(
+            $this->collection
+                ->some(fn ($value, $key) => $value < 2)
+        );
+    }
+
+    /** @test */
     public function can_iterate_through_a_collection_with_for_each_method()
     {
         $array =  $this->collection->all();
@@ -342,6 +351,32 @@ class CollectionTest extends TestCase
         $this->assertEquals(
             $expected,
             $collection->chunk(2, $preservekeys = true)->all()
+        );
+    }
+
+
+    /** @test */
+    public function get_diffrence_of_collection_with_another_one()
+    {
+        $collection1 = new Collection(["John",  "Adem",  "Billy",  "Noah"]);
+        $collection2 = new Collection(["John",  "Sally",  "Jane",  "Peter"]);
+        $expected = ["Adem",  "Billy",  "Noah"];
+        $this->assertEquals(
+            $expected,
+            $collection1->diff($collection2)->all()
+        );
+    }
+
+
+    /** @test */
+    public function get_intersect_of_collection_with_another_one()
+    {
+        $collection1 = new Collection(["John",  "Jane",  "Billy",  "Noah"]);
+        $collection2 = new Collection(["John",  "Sally",  "Jane",  "Peter"]);
+        $expected = ["John",  "Jane"];
+        $this->assertEquals(
+            $expected,
+            $collection1->intersect($collection2)->all()
         );
     }
 }

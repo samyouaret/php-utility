@@ -173,11 +173,21 @@ class Collection implements CollectionInterface
     public function every(callable $callback)
     {
         foreach ($this->data as $key => $value) {
-            if (!$callback($key, $value)) {
+            if (!$callback($value, $key)) {
                 return false;
             }
         }
         return true;
+    }
+
+    public function some(callable $callback)
+    {
+        foreach ($this->data as $key => $value) {
+            if ($callback($value, $key)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function forEach(callable $callback)
@@ -214,6 +224,19 @@ class Collection implements CollectionInterface
     public function chunk(int $size, bool $preserve_keys = FALSE): Collection
     {
         $array =  array_chunk($this->data, $size, $preserve_keys);
+        return new Collection($array);
+    }
+
+    public function diff(Collection $collection): Collection
+    {
+        $array =  array_diff($this->data, $collection->all());
+        // use array_values to reindex elements since indexes are preserved
+        return new Collection(array_values($array));
+    }
+
+    public function intersect(Collection $collection): Collection
+    {
+        $array =  array_intersect($this->data, $collection->all());
         return new Collection($array);
     }
 
