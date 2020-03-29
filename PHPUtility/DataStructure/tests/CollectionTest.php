@@ -16,7 +16,7 @@ class CollectionTest extends TestCase
         $this->collection->push("two", 2);
         $this->collection->push("three", 3);
         $this->users =
-            $records = array(
+            array(
                 array(
                     'id' => 2135,
                     'first_name' => 'John',
@@ -303,10 +303,45 @@ class CollectionTest extends TestCase
     {
         $usersCollection = new Collection($this->users);
         $expected = [2135 => "John", 3245 => "Sally", 5342 => "Jane", 5623 => "Peter"];
-        print_r($usersCollection->col('first_name', "id")->all());
         $this->assertEquals(
             $expected,
             $usersCollection->col('first_name', "id")->all()
+        );
+    }
+
+    /** @test */
+    public function count_values_in_a_collection()
+    {
+        $array = ["John", 2, 2, "Sally", "John", 2];
+        $collection = new Collection($array);
+        $expected = ["John" => 2, 2 => 3, "Sally" => 1];
+        $this->assertEquals(
+            $expected,
+            $collection->countValues()
+        );
+    }
+
+
+    /** @test */
+    public function combine_2_collections_with_keys_and_values_from_each_one()
+    {
+        $collection1 = new Collection([2135,  3245,  5342,  5623]);
+        $collection2 = new Collection(["John",  "Sally",  "Jane",  "Peter"]);
+        $expected = [2135 => "John", 3245 => "Sally", 5342 => "Jane", 5623 => "Peter"];
+        $this->assertEquals(
+            $expected,
+            Collection::combine($collection1, $collection2)->all()
+        );
+    }
+
+    /** @test */
+    public function chunk_collection_into_sub_collections()
+    {
+        $collection = new Collection([2135 => "John", 3245 => "Sally", 5342 => "Jane", 5623 => "Peter"]);
+        $expected = [[2135 => "John", 3245 => "Sally"], [5342 => "Jane", 5623 => "Peter"]];
+        $this->assertEquals(
+            $expected,
+            $collection->chunk(2, $preservekeys = true)->all()
         );
     }
 }

@@ -199,6 +199,24 @@ class Collection implements CollectionInterface
         return new Collection($array);
     }
 
+    public function countValues(): array
+    {
+        // it count only integer values and string
+        return array_count_values($this->data);
+    }
+
+    public static function combine(Collection $collection1, Collection $collection2): Collection
+    {
+        $array =  array_combine($collection1->all(), $collection2->all());
+        return new Collection($array);
+    }
+
+    public function chunk(int $size, bool $preserve_keys = FALSE): Collection
+    {
+        $array =  array_chunk($this->data, $size, $preserve_keys);
+        return new Collection($array);
+    }
+
     /* Methods of ArrayAccess */
     public function offsetExists($offset): bool
     {
