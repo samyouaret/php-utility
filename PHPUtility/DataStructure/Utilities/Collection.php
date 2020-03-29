@@ -26,7 +26,7 @@ class Collection implements CollectionInterface
     public function push($key, $value = null)
     {
         // insert key value pair 
-        if ($value) {
+        if ($value !== null) {
             $this->data[$key] = $value;
             return;
         }
@@ -64,9 +64,28 @@ class Collection implements CollectionInterface
         return array_key_exists($key, $this->data);
     }
 
+    public function prepend($key, $value = null)
+    {
+        if ($value !== null) {
+            $this->data = array($key => $value) + $this->data;
+            return;
+        }
+        array_unshift($this->data, $key);
+    }
+
+    public function prependArray(array $values)
+    {
+        $this->data = $values + $this->data;
+    }
+
     public function pop()
     {
         return array_pop($this->data);
+    }
+
+    public function shift()
+    {
+        return array_shift($this->data);
     }
 
     public function remove($value)

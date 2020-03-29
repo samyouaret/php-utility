@@ -109,6 +109,38 @@ class CollectionTest extends TestCase
     }
 
     /** @test */
+    public function shift_first_item_in_collection()
+    {
+        $collection = new Collection("one", 1);
+        $collection->push("two", 2);
+        $collection->push("three", 3);
+        $this->assertEquals(1, $collection->shift());
+        $this->assertCount(2, $collection);
+    }
+
+    /** @test */
+    public function prepend_item_to_first_of_collection()
+    {
+        $collection = new Collection("one", 1);
+        $collection->push("two", 2);
+        $collection->push("three", 3);
+        $collection->prepend(15);
+        $this->assertCount(4, $collection);
+        $this->assertEquals(15, $collection->first());
+    }
+
+    /** @test */
+    public function prepend_key_value_to_first_of_collection()
+    {
+        $collection = new Collection("one", 1);
+        $collection->push("two", 2);
+        $collection->push("three", 3);
+        $collection->prepend("zero", 0);
+        $this->assertCount(4, $collection);
+        $this->assertEquals(0, $collection->first());
+    }
+
+    /** @test */
     public function remove_item_in_collection()
     {
         $collection = new Collection("one", 1);
