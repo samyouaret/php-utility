@@ -201,4 +201,12 @@ class CollectionTest extends TestCase
         });
         $this->assertEquals($array, $result);
     }
+
+    /** @test */
+    public function reverse_a_collection()
+    {
+        $reversed =  $this->collection->reverse();
+        $array = ["three" => 3, "two" => 2, 'one' => 1];
+        $this->assertEquals($array, $reversed);
+    }
 }

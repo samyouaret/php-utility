@@ -5,7 +5,7 @@ namespace PHPUtility\DataStructure\Utilities;
 class Collection implements CollectionInterface
 {
     private array $data = [];
-    
+
     public function __construct($key = null, $value = null)
     {
         if ($key) {
@@ -141,6 +141,11 @@ class Collection implements CollectionInterface
         foreach ($this->data as $key => $value) {
             $callback($key, $value);
         }
+    }
+
+    public function reverse(): array
+    {
+        return array_reverse($this->data, true);
     }
 
     /* Methods of ArrayAccess */
