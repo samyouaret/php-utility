@@ -25,6 +25,20 @@ class CollectionTest extends TestCase
         $collection->push("three");
         $this->assertCount(3, $collection);
     }
+    
+    /** @test */
+    public function can_iterate_through_a_collection()
+    {
+        $collection = new Collection("one", 1);
+        $collection->push("two", 2);
+        $collection->push("three", 3);
+        $array =  $collection->all();
+        $result = [];
+        foreach ($collection as $key => $value) {
+            $result[$key] = $value;
+        }
+        $this->assertEquals($array, $result);
+    }
 
     /** @test */
     public function push_to_collection_keys_and_values()
