@@ -25,7 +25,7 @@ class CollectionTest extends TestCase
         $collection->push("three");
         $this->assertCount(3, $collection);
     }
-    
+
     /** @test */
     public function can_iterate_through_a_collection()
     {
@@ -227,5 +227,32 @@ class CollectionTest extends TestCase
                 $initial = 1
             );
         $this->assertSame(6, $result);
+    }
+
+    /** @test */
+    public function run_callback_on_every_item_all_items_must_match()
+    {
+        $collection = new Collection(1);
+        $collection->push(2);
+        $collection->push(3);
+        $this->assertTrue(
+            $collection
+                ->every(fn ($value, $key) => $value < 6)
+        );
+    }
+
+
+    /** @test */
+    public function can_iterate_through_a_collection_with_for_each_method()
+    {
+        $collection = new Collection("one", 1);
+        $collection->push("two", 2);
+        $collection->push("three", 3);
+        $array =  $collection->all();
+        $result = [];
+        $collection->forEach(function ($key, $value) use (&$result) {
+            $result[$key] = $value;
+        });
+        $this->assertEquals($array, $result);
     }
 }

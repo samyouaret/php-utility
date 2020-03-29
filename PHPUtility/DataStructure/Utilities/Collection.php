@@ -126,6 +126,23 @@ class Collection implements CollectionInterface
         return array_reduce($this->data, $callback, $intialValue);
     }
 
+    public function every(callable $callback)
+    {
+        foreach ($this->data as $key => $value) {
+            if (!$callback($key, $value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function forEach(callable $callback)
+    {
+        foreach ($this->data as $key => $value) {
+            $callback($key, $value);
+        }
+    }
+
     /* Methods of ArrayAccess */
     public function offsetExists($offset): bool
     {
