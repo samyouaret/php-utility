@@ -36,12 +36,9 @@ class CollectionTest extends TestCase
     /** @test */
     public function can_iterate_through_a_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
-        $array =  $collection->all();
+        $array =  $this->collection->all();
         $result = [];
-        foreach ($collection as $key => $value) {
+        foreach ($this->collection as $key => $value) {
             $result[$key] = $value;
         }
         $this->assertEquals($array, $result);
@@ -50,9 +47,6 @@ class CollectionTest extends TestCase
     /** @test */
     public function push_to_collection_keys_and_values()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
         $this->assertCount(3, $this->collection);
     }
 
@@ -68,45 +62,30 @@ class CollectionTest extends TestCase
     /** @test */
     public function get_first_item_in_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
         $this->assertEquals(1, $this->collection->first());
     }
 
     /** @test */
     public function get_last_item_in_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
         $this->assertEquals(3, $this->collection->last());
     }
 
     /** @test */
     public function get_item_by_key()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
         $this->assertEquals(3, $this->collection->get('three'));
     }
 
     /** @test */
     public function collection__has_given_key()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
         $this->assertTrue($this->collection->hasKey('three'));
     }
 
     /** @test */
     public function collection__key_has_given_value()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
         $this->assertTrue($this->collection->has("three", 3));
     }
 
@@ -122,9 +101,6 @@ class CollectionTest extends TestCase
     /** @test */
     public function pop_last_item_in_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
         $this->assertEquals(3, $this->collection->pop());
         $this->assertCount(2, $this->collection);
     }
@@ -132,42 +108,30 @@ class CollectionTest extends TestCase
     /** @test */
     public function shift_first_item_in_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
-        $this->assertEquals(1, $collection->shift());
-        $this->assertCount(2, $collection);
+        $this->assertEquals(1, $this->collection->shift());
+        $this->assertCount(2, $this->collection);
     }
 
     /** @test */
     public function prepend_item_to_first_of_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
-        $collection->prepend(15);
-        $this->assertCount(4, $collection);
-        $this->assertEquals(15, $collection->first());
+        $this->collection->prepend(15);
+        $this->assertCount(4, $this->collection);
+        $this->assertEquals(15, $this->collection->first());
     }
 
     /** @test */
     public function prepend_key_value_to_first_of_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
-        $collection->prepend("zero", 0);
-        $this->assertCount(4, $collection);
-        $this->assertEquals(0, $collection->first());
+        $this->collection->prepend("zero", 0);
+        $this->assertCount(4, $this->collection);
+        $this->assertEquals(0, $this->collection->first());
     }
 
     /** @test */
     public function remove_item_in_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
-        $array = $collection->remove(2);
+        $array = $this->collection->remove(2);
         $this->assertEquals(["one" => 1, "three" => 3], $array);
         $this->assertCount(2, $array);
     }
@@ -175,60 +139,42 @@ class CollectionTest extends TestCase
     /** @test */
     public function search_item_in_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
-        $this->assertTrue($collection->search(2));
+        $this->assertTrue($this->collection->search(2));
     }
 
     /** @test */
     public function get_all_items_in_the_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
         $array = ["one" => 1, "two" => 2, "three" => 3];
-        $this->assertEquals($array, $collection->all());
+        $this->assertEquals($array, $this->collection->all());
     }
 
     /** @test */
     public function clear_all_items_in_the_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
-        $collection->clear();
-        $this->assertEmpty($collection);
-        $this->assertTrue($collection->empty());
+        $this->collection->clear();
+        $this->assertEmpty($this->collection);
+        $this->assertTrue($this->collection->empty());
     }
 
     /** @test */
     public function map_a_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
-        $result = $collection->map(fn ($value) => $value * 2);
+        $result = $this->collection->map(fn ($value) => $value * 2);
         $this->assertSame(["one" => 2, "two" => 4, "three" => 6], $result);
     }
 
     /** @test */
     public function filter_a_collection()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
-        $result = $collection->filter(fn ($value) => $value < 3);
+        $result = $this->collection->filter(fn ($value) => $value < 3);
         $this->assertSame(["one" => 1, "two" => 2], $result);
     }
 
     /** @test */
     public function reduce_a_collection()
     {
-        $collection = new Collection(1);
-        $collection->push(2);
-        $collection->push(3);
-        $result = $collection
+        $result = $this->collection
             ->reduce(
                 fn ($accumalator, $current) => $accumalator * $current,
                 $initial = 1
@@ -239,25 +185,18 @@ class CollectionTest extends TestCase
     /** @test */
     public function run_callback_on_every_item_all_items_must_match()
     {
-        $collection = new Collection(1);
-        $collection->push(2);
-        $collection->push(3);
         $this->assertTrue(
-            $collection
+            $this->collection
                 ->every(fn ($value, $key) => $value < 6)
         );
     }
 
-
     /** @test */
     public function can_iterate_through_a_collection_with_for_each_method()
     {
-        $collection = new Collection("one", 1);
-        $collection->push("two", 2);
-        $collection->push("three", 3);
-        $array =  $collection->all();
+        $array =  $this->collection->all();
         $result = [];
-        $collection->forEach(function ($key, $value) use (&$result) {
+        $this->collection->forEach(function ($key, $value) use (&$result) {
             $result[$key] = $value;
         });
         $this->assertEquals($array, $result);
