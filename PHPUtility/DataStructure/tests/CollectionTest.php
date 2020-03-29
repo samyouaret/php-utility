@@ -10,6 +10,13 @@ use PHPUtility\DataStructure\Utilities\CollectionInterface;
 
 class CollectionTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        $this->collection = new Collection("one", 1);
+        $this->collection->push("two", 2);
+        $this->collection->push("three", 3);
+    }
+
     /** @test */
     public function is_instance_of_collection_interface_empty()
     {
@@ -46,7 +53,7 @@ class CollectionTest extends TestCase
         $collection = new Collection("one", 1);
         $collection->push("two", 2);
         $collection->push("three", 3);
-        $this->assertCount(3, $collection);
+        $this->assertCount(3, $this->collection);
     }
 
     /** @test */
@@ -64,7 +71,7 @@ class CollectionTest extends TestCase
         $collection = new Collection("one", 1);
         $collection->push("two", 2);
         $collection->push("three", 3);
-        $this->assertEquals(1, $collection->first());
+        $this->assertEquals(1, $this->collection->first());
     }
 
     /** @test */
@@ -73,7 +80,7 @@ class CollectionTest extends TestCase
         $collection = new Collection("one", 1);
         $collection->push("two", 2);
         $collection->push("three", 3);
-        $this->assertEquals(3, $collection->last());
+        $this->assertEquals(3, $this->collection->last());
     }
 
     /** @test */
@@ -82,7 +89,7 @@ class CollectionTest extends TestCase
         $collection = new Collection("one", 1);
         $collection->push("two", 2);
         $collection->push("three", 3);
-        $this->assertEquals(3, $collection->get('three'));
+        $this->assertEquals(3, $this->collection->get('three'));
     }
 
     /** @test */
@@ -91,7 +98,7 @@ class CollectionTest extends TestCase
         $collection = new Collection("one", 1);
         $collection->push("two", 2);
         $collection->push("three", 3);
-        $this->assertTrue($collection->hasKey('three'));
+        $this->assertTrue($this->collection->hasKey('three'));
     }
 
     /** @test */
@@ -100,7 +107,7 @@ class CollectionTest extends TestCase
         $collection = new Collection("one", 1);
         $collection->push("two", 2);
         $collection->push("three", 3);
-        $this->assertTrue($collection->has("three", 3));
+        $this->assertTrue($this->collection->has("three", 3));
     }
 
     /** @test */
@@ -118,8 +125,8 @@ class CollectionTest extends TestCase
         $collection = new Collection("one", 1);
         $collection->push("two", 2);
         $collection->push("three", 3);
-        $this->assertEquals(3, $collection->pop());
-        $this->assertCount(2, $collection);
+        $this->assertEquals(3, $this->collection->pop());
+        $this->assertCount(2, $this->collection);
     }
 
     /** @test */
