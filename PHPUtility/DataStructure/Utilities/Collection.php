@@ -32,11 +32,13 @@ class Collection implements CollectionInterface
         }
         // key is the value insert it in the data
         array_push($this->data, $key);
+        return $this;
     }
 
     public function pushArray(array $array)
     {
         $this->data = array_merge($this->data, $array);
+        return $this;
     }
 
     public function first()
@@ -71,11 +73,13 @@ class Collection implements CollectionInterface
             return;
         }
         array_unshift($this->data, $key);
+        return $this;
     }
 
     public function prependArray(array $values)
     {
         $this->data = $values + $this->data;
+        return $this;
     }
 
     public function pop()
@@ -107,18 +111,21 @@ class Collection implements CollectionInterface
     {
         unset($this->data);
         $this->data = [];
+        return $this;
     }
 
-    public function map(callable $callback): array
+    public function map(callable $callback): Collection
     {
         // array_map preserce keys now 
-        return array_map($callback, $this->data);
+        $array = array_map($callback, $this->data);
+        return (new Collection())->pushArray($array);
     }
 
-    public function filter(callable $callback): array
+    public function filter(callable $callback): Collection
     {
         // array_map preserce keys now 
-        return array_filter($this->data, $callback);
+        $array =  array_filter($this->data, $callback);
+        return (new Collection())->pushArray($array);
     }
 
     public function reduce(callable $callback, $intialValue = NULL)
@@ -143,9 +150,10 @@ class Collection implements CollectionInterface
         }
     }
 
-    public function reverse(): array
+    public function reverse(): Collection
     {
-        return array_reverse($this->data, true);
+        $array =  array_reverse($this->data, true);
+        return (new Collection())->pushArray($array);
     }
 
     /* Methods of ArrayAccess */

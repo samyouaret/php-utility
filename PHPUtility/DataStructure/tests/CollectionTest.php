@@ -78,13 +78,13 @@ class CollectionTest extends TestCase
     }
 
     /** @test */
-    public function collection__has_given_key()
+    public function collection_has_given_key()
     {
         $this->assertTrue($this->collection->hasKey('three'));
     }
 
     /** @test */
-    public function collection__key_has_given_value()
+    public function collection_key_has_given_value()
     {
         $this->assertTrue($this->collection->has("three", 3));
     }
@@ -160,14 +160,16 @@ class CollectionTest extends TestCase
     /** @test */
     public function map_a_collection()
     {
-        $result = $this->collection->map(fn ($value) => $value * 2);
-        $this->assertSame(["one" => 2, "two" => 4, "three" => 6], $result);
+        $collection = $this->collection->map(fn ($value) => $value * 2)->all();
+        $this->assertSame(["one" => 2, "two" => 4, "three" => 6], $collection);
     }
 
     /** @test */
     public function filter_a_collection()
     {
-        $result = $this->collection->filter(fn ($value) => $value < 3);
+        $result = $this->collection
+            ->filter(fn ($value) => $value < 3)
+            ->all();
         $this->assertSame(["one" => 1, "two" => 2], $result);
     }
 
@@ -205,7 +207,7 @@ class CollectionTest extends TestCase
     /** @test */
     public function reverse_a_collection()
     {
-        $reversed =  $this->collection->reverse();
+        $reversed =  $this->collection->reverse()->all();
         $array = ["three" => 3, "two" => 2, 'one' => 1];
         $this->assertEquals($array, $reversed);
     }
