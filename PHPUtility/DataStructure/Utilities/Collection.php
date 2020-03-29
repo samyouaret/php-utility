@@ -5,7 +5,7 @@ namespace PHPUtility\DataStructure\Utilities;
 class Collection implements CollectionInterface
 {
     private array $data = [];
-    private int $position = 0;
+    
     public function __construct($key = null, $value = null)
     {
         if ($key) {
