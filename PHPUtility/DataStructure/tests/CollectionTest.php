@@ -34,6 +34,15 @@ class CollectionTest extends TestCase
     }
 
     /** @test */
+    public function construct_a_collection_from_array()
+    {
+        $array = ["one", "two", "three"];
+        $collection = new Collection($array);
+        $this->assertCount(3, $collection);
+        $this->assertEquals($array, $collection->all());
+    }
+
+    /** @test */
     public function can_iterate_through_a_collection()
     {
         $array =  $this->collection->all();
@@ -131,15 +140,58 @@ class CollectionTest extends TestCase
     /** @test */
     public function remove_item_in_collection()
     {
-        $array = $this->collection->remove(2);
+        $array = $this->collection->remove(2)->all();
         $this->assertEquals(["one" => 1, "three" => 3], $array);
         $this->assertCount(2, $array);
+    }
+
+    /** @test */
+    public function replace_items_in_collection()
+    {
+        $collection = $this->collection->replace(['one' => 'uno', 'three' => 'tres']);
+        $this->assertEquals(
+            ["one" => 'uno', "three" => 'tres', 'two' => 2],
+            $collection->all()
+        );
     }
 
     /** @test */
     public function search_item_in_collection()
     {
         $this->assertTrue($this->collection->search(2));
+    }
+
+    /** @test */
+    public function find_first_item_in_collection_based_on_callback()
+    {
+        $this->assertEquals(2, $this->collection->find(fn ($value, $key) => $value > 1));
+    }
+
+    /** @test */
+    public function get_values_of_collection()
+    {
+        $this->assertEquals([1, 2, 3], $this->collection->values());
+    }
+
+    /** @test */
+    public function get_keys_of_collection()
+    {
+        $this->assertEquals(["one", "two", "three"], $this->collection->keys());
+    }
+
+    /** @test */
+    public function merge_collection_with_other_collections()
+    {
+        $collection2 = (new Collection())
+            ->pushArray(["four" => 1, "five" => 5, "three" => 'tres']);
+        $this->assertEquals(
+            [
+                "one" => 1, "two" => 2, "three" => 3,
+                // last key override others like three
+                "four" => 1, "five" => 5, "three" => 'tres',
+            ],
+            $this->collection->merge($collection2)->all()
+        );
     }
 
     /** @test */

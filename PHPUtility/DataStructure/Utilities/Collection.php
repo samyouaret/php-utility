@@ -9,7 +9,7 @@ class Collection implements CollectionInterface
     public function __construct($key = null, $value = null)
     {
         if ($key) {
-            $this->push($key, $value);
+            is_array($key) ? $this->pushArray($key) : $this->push($key, $value);
         }
     }
 
@@ -22,7 +22,10 @@ class Collection implements CollectionInterface
     {
         return count($this->data) == 0;
     }
-
+    /**
+     * @param $key type mixed
+     * @param $value mixed 
+     */
     public function push($key, $value = null)
     {
         // insert key value pair 
@@ -30,7 +33,7 @@ class Collection implements CollectionInterface
             $this->data[$key] = $value;
             return;
         }
-        // key is the value insert it in the data
+        // if value is missed the value is key 
         array_push($this->data, $key);
         return $this;
     }
@@ -92,14 +95,47 @@ class Collection implements CollectionInterface
         return array_shift($this->data);
     }
 
-    public function remove($value)
+    public function remove($value): Collection
     {
-        return array_diff($this->data, [$value]);
+        $array = array_diff($this->data, [$value]);
+        return new Collection($array);
+    }
+
+    public function replace(array $array)
+    {
+        $array = array_replace($this->data, $array);
+        return new Collection($array);
     }
 
     public function search($value, bool $strict = false): bool
     {
-        return array_search($value, $this->data, $strict);
+        return in_array($value, $this->data, $strict);
+    }
+
+    public function find(callable $callback)
+    {
+        foreach ($this->data as $key => $value) {
+            if ($callback($value, $key)) {
+                return $value;
+            }
+        }
+        return null;
+    }
+
+    public function values(): array
+    {
+        return array_values($this->data);
+    }
+
+    public function keys(): array
+    {
+        return array_keys($this->data);
+    }
+
+    public function merge(Collection $collection): Collection
+    {
+        $array =  array_merge($this->data, $collection->all());
+        return new Collection($array);
     }
 
     public function all(): array
@@ -118,14 +154,14 @@ class Collection implements CollectionInterface
     {
         // array_map preserce keys now 
         $array = array_map($callback, $this->data);
-        return (new Collection())->pushArray($array);
+        return new Collection($array);
     }
 
     public function filter(callable $callback): Collection
     {
         // array_map preserce keys now 
         $array =  array_filter($this->data, $callback);
-        return (new Collection())->pushArray($array);
+        return new Collection($array);
     }
 
     public function reduce(callable $callback, $intialValue = NULL)
@@ -153,7 +189,7 @@ class Collection implements CollectionInterface
     public function reverse(): Collection
     {
         $array =  array_reverse($this->data, true);
-        return (new Collection())->pushArray($array);
+        return new Collection($array);
     }
 
     /* Methods of ArrayAccess */
