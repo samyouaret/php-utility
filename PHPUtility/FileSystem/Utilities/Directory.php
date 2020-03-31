@@ -3,8 +3,9 @@
 namespace PHPUtility\FileSystem\Utilities;
 
 use PHPUtility\FileSystem\Utilities\Managable;
+use PHPUtility\FileSystem\Utilities\Readable;
 
-class Directory implements Managable
+class Directory implements Managable, Readable
 {
   private $path;
 
@@ -17,7 +18,7 @@ class Directory implements Managable
   {
     @mkdir($this->path);
   }
-  
+
   public  function delete()
   {
     if (file_exists($this->path)) {

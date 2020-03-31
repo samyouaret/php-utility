@@ -46,4 +46,11 @@ class FSTest extends TestCase
         $this->assertTrue(FS::isWritable($this->file));
         $this->assertTrue(FS::isWritable($this->nonEngFile));
     }
+
+    /** @test */
+    public function convert_bytes_to_symbol_string()
+    {
+        $this->assertEquals('10.00 MiB',FS::bytesTOSymbol(1024 * 1024 * 10));
+        $this->assertEquals('0.00 B',FS::bytesTOSymbol(0));
+    }
 }

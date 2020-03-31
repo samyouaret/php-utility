@@ -69,7 +69,7 @@ class Path
         return  Path::join($info['dirname'], $info['filename'] . '.' . $info['extension']);
     }
 
-    private function ensureValid(string $path)
+    public function ensureValid(string $path)
     {
         if (!file_exists($path)) {
             throw new InvalidPathException("Invalid Path passed", 1);
