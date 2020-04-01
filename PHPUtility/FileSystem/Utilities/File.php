@@ -4,7 +4,7 @@
 
 namespace PHPUtility\FileSystem\Utilities;
 
-use PHPUtility\FileSystem\Exceptions\DirectoryDoesNotExistException;
+use PHPUtility\FileSystem\Exceptions\DirectoryNotExistException;
 use PHPUtility\FileSystem\Exceptions\FileDoesNotExistException;
 use PHPUtility\FileSystem\Exceptions\FileException;
 use PHPUtility\FileSystem\Exceptions\InvalidModeException;
@@ -40,16 +40,17 @@ class File  extends \SplFileInfo implements Managable, Readable, Writable
   protected $handle;
   protected string $mode;
   protected array $supporedModes = ['r', 'r+', 'w', 'w+', 'a', 'a+', 'x', 'x+'];
-  protected $context = NULL;
+  protected $context;
   protected bool $useIncludePath = FALSE;
 
-  public function __construct(string $path, string $mode = self::READ_ONLY)
+  public function __construct(string $path, string $mode = self::READ_ONLY, $context = NULL)
   {
     // call it statically fix this 
     $this->ensureValidMode($mode);
     $this->ensureValidPathWithMode($path, $mode);
     $this->path = $path;
     $this->mode = $mode;
+    $this->context = $context ?? stream_context_get_default();
     parent::__construct($path);
   }
 
@@ -64,7 +65,7 @@ class File  extends \SplFileInfo implements Managable, Readable, Writable
       return true;
     }
     // here only write modes are able to reach
-    throw new DirectoryDoesNotExistException("trying to open Non existing Directoy for write", 1);
+    throw new DirectoryNotExistException("trying to open Non existing Directoy for write", 1);
   }
   public function getFilePath()
   {

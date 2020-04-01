@@ -2,6 +2,6 @@
 
 namespace PHPUtility\FileSystem\Exceptions;
 
-class DirectoryDoesNotExistException extends \Exception
+class DirectoryNotExistException extends \Exception
 {
 }

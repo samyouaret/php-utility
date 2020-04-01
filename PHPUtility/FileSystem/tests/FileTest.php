@@ -5,7 +5,7 @@ namespace PHPUtility\FileSystem;
 require dirname(".", 2) . '/bootstrap.php';
 
 use PHPUnit\Framework\TestCase;
-use PHPUtility\FileSystem\Exceptions\DirectoryDoesNotExistException;
+use PHPUtility\FileSystem\Exceptions\DirectoryNotExistException;
 use PHPUtility\FileSystem\Exceptions\FileDoesNotExistException;
 use PHPUtility\FileSystem\Exceptions\InvalidModeException;
 use PHPUtility\FileSystem\Exceptions\PerformOperationOnClosedFileException;
@@ -35,7 +35,7 @@ class FileTest extends TestCase
     public function construct_file_with_existing_and_mode()
     {
         $file = new File($this->file, File::READ_ONLY);
-        $this->assertTrue(true);
+        $this->assertTrue($file->open());
     }
 
     /** @test */
@@ -61,10 +61,10 @@ class FileTest extends TestCase
     }
 
     /** @test */
-    public function construct_file_with_non_existing_path_for_write_should_not_thorw_an_error()
+    public function construct_file_with_non_existing_path_for_write_should_not_throw_an_error()
     {
         $file = new File($this->nonExistingFile, File::WRITE_ONLY);
-        $this->assertTrue(true);
+        $this->markTestIncomplete();
     }
 
     /** @test */
@@ -92,7 +92,7 @@ class FileTest extends TestCase
     /** @test */
     public function open_file_with_non_existing_file_in_non_existing_dir_for_write_throw_error()
     {
-        $this->expectException(DirectoryDoesNotExistException::class);
+        $this->expectException(DirectoryNotExistException::class);
         $file = new File($this->nonExistingFile, File::WRITE_ONLY);
         $this->assertTrue($file->open());
     }
