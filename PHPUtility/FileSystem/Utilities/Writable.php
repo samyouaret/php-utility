@@ -4,5 +4,5 @@ namespace PHPUtility\FileSystem\Utilities;
 
 interface Writable
 {
-    public function write(string $string): int;
+    public function write(string $string, int $length): int;
 }

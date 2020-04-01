@@ -1,4 +1,6 @@
 <?php
+// FIX: 
+// check the read/write mode at open
 
 namespace PHPUtility\FileSystem\Utilities;
 
@@ -63,7 +65,7 @@ class File  implements Managable, Readable, Writable
     throw new DirectoryDoesNotExistException("trying to open Non existing Directoy for write", 1);
   }
 
-  public  function close()
+  public  function close(): bool
   {
     $bool = fclose($this->handle);
     $this->handle = null;
@@ -80,7 +82,26 @@ class File  implements Managable, Readable, Writable
 
   public  function eof()
   {
+    $this->ensureFileIsOpended();
     return feof($this->handle);
+  }
+
+  public  function tell()
+  {
+    $this->ensureFileIsOpended();
+    return ftell($this->handle);
+  }
+
+  public  function seek(int $flags, $whence = SEEK_SET): int
+  {
+    $this->ensureFileIsOpended();
+    return fseek($this->handle, $flags, $whence);
+  }
+
+  public  function stat(): array
+  {
+    $this->ensureFileIsOpended();
+    return fstat($this->handle);
   }
 
   public  function rewind(): bool
@@ -100,9 +121,8 @@ class File  implements Managable, Readable, Writable
     /// here called only once after it finish
   }
 
-  public  function content()
+  public function content()
   {
-    $this->ensureCanRead();
     return file_get_contents($this->path, $this->useIncludePath, $this->context);
   }
 
@@ -113,9 +133,10 @@ class File  implements Managable, Readable, Writable
     return fgets($this->handle, $length);
   }
 
-  public  function readLineAsync(int $length = 1024)
+  public  function readLineAsync(int $length = 0)
   {
     $this->ensureCanRead();
+    $length = $length > 0 ? $length : filesize($this->path);
     while (!feof($this->handle) && $chunk = fgets($this->handle, $length)) {
       $key = ftell($this->handle);
       yield $key => $chunk;
@@ -137,27 +158,49 @@ class File  implements Managable, Readable, Writable
     }
   }
 
-  public  function write(string $string): int
+  /**
+   * @param $flags 
+   * FILE_USE_INCLUDE_PATH: Search for the file in the include_path.
+   * FILE_IGNORE_NEW_LINES : Omit newline at the end of each array element 
+   * FILE_SKIP_EMPTY_LINES : Skip empty lines 
+   */
+  public function asArray(int $flags = 0)
   {
-    return 1;
+    $flags = $this->useIncludePath ? FILE_USE_INCLUDE_PATH : $flags;
+    return file($this->path, $flags, $this->context);
   }
 
-  public  function move(string $newPath)
+  public  function write(string $string, int $length = PHP_INT_MAX): int
   {
+    $this->ensureCanWrite();
+    return \fwrite($this->handle, $string, $length);
+  }
+  /**
+   * FILE_USE_INCLUDE_PATH 	Search for filename in the include directory. 
+   * FILE_APPEND 	If file filename already exists, append the data 
+   * to the file instead of overwriting it.
+   * LOCK_EX 	Acquire an exclusive lock on the file while proceeding to the writing.
+   * @param $data Can be either a string, an array or a stream resource.
+   */
+  public function setContent($data, int $flags = 0)
+  {
+    $flags = $this->useIncludePath ? FILE_USE_INCLUDE_PATH : $flags;
+    return file_put_contents($this->path, $data, $flags, $this->context);
   }
 
-  public  function rename(string $newPath)
+  /* move a file or a entire dir using rename func */
+  public function moveTo(string $newPath): bool
   {
+    return rename($this->path, $newPath, $this->context);
+  }
+  public function rename(string $newPath): bool
+  {
+    return rename($this->path, $newPath, $this->context);
   }
 
-  public  function delete()
+  public  function copy(string $newPath): bool
   {
-    return unlink($this->path);
-  }
-
-  public  function copy(string $newPath)
-  {
-    $newPath = Path::join($newPath, $this->path);
+    // $newPath = Path::join($newPath, $this->path);
     if (file_exists($newPath)) {
       throw new \Exception("target path $newPath File already exists");
       return false;
@@ -165,9 +208,13 @@ class File  implements Managable, Readable, Writable
     return @copy($this->path, $newPath);
   }
 
+  public  function delete(): bool
+  {
+    return unlink($this->path);
+  }
+
   public  function size()
   {
-    $this->ensureFileIsOpended();
     return filesize($this->path);
   }
 
@@ -224,6 +271,12 @@ class File  implements Managable, Readable, Writable
     $this->ensureReadMode();
   }
 
+  public function ensureCanWrite()
+  {
+    $this->ensureFileIsOpended();
+    $this->ensureWriteMode();
+  }
+
   public function ensureValidMode(string $mode)
   {
     if (!$this->isValidMode($mode)) {
@@ -253,6 +306,14 @@ class File  implements Managable, Readable, Writable
     $nonReadModes = ['w', 'x'];
     if (in_array($this->mode, $nonReadModes)) {
       throw new InvalidModeException("invalid Mode '$this->mode' provided to read file", 1);
+    }
+  }
+
+  public function ensureWriteMode()
+  {
+    $nonWriteModes = ['r'];
+    if (in_array($this->mode, $nonWriteModes)) {
+      throw new InvalidModeException("invalid Mode '$this->mode' provided to write file", 1);
     }
   }
 

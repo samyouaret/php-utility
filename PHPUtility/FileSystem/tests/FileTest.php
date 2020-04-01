@@ -20,6 +20,7 @@ class FileTest extends TestCase
         $this->file = Path::join($this->dir, 'file.txt');
         $this->nonEngFile = Path::join($this->dir, 'ملف.txt');
         $this->newFile = Path::join($this->dir, 'newfile.txt');
+        $this->subDir = Path::join($this->dir, 'subDir');
         $this->nonExistingDir = Path::join($this->dir, 'invalid-path');
         $this->nonExistingFile = Path::join($this->dir, 'invalid-path', 'newfile.txt');
     }
@@ -153,10 +154,8 @@ class FileTest extends TestCase
     public function open_and_read_file_using_content_method()
     {
         $file = new File($this->file, File::READ_ONLY);
-        $file->open();
         $content = file_get_contents($this->file);
         $this->assertEquals($content, $file->content());
-        $file->close();
     }
 
 
@@ -217,5 +216,78 @@ class FileTest extends TestCase
         }
         $this->assertEquals($Expectedcontent, $result);
         $file->close();
+    }
+
+    /** @test */
+    public function open_and_read_file_as_array()
+    {
+        $file = new File($this->file, File::READ_ONLY);
+        $content = file_get_contents($this->file);
+        $array = $file->asArray();
+        $result = join("", $array);
+        $this->assertEquals($content, $result);
+    }
+
+    /** @test */
+    public function open_and_read_file_as_json()
+    {
+        $file = new File($this->file, File::READ_ONLY);
+        $content = file_get_contents($this->file);
+        $array = $file->asArray();
+        $result = join("", $array);
+        $this->assertEquals($content, $result);
+    }
+
+    /** @test */
+    public function open_and_write_to_file()
+    {
+        $file = new File($this->newFile, File::WRITE_ONLY);
+        $file->open();
+        $writtenBytes = $file->write("some text for write file");
+        $file->close();
+        $this->assertGreaterThan(0, $writtenBytes);
+    }
+
+    /** @test */
+    public function set_content_of_a_file()
+    {
+        $file = new File($this->newFile, File::WRITE_ONLY);
+        $text = "some text for write file";
+        $file->setContent($text);
+        $content = file_get_contents($this->newFile);
+        $this->assertEquals($text, $content);
+    }
+
+    /** @test */
+    public function move_a_file()
+    {
+        $file = new File($this->newFile, FILE::WRITE_ONLY);
+        $file->open();
+        $newfile = Path::join($this->subDir, 'newfile.txt');
+        $file->moveTo($newfile);
+        $this->assertFileExists($newfile);
+        @unlink($newfile);
+    }
+
+    /** @test */
+    public function copy_a_file()
+    {
+        $file = new File($this->newFile, FILE::WRITE_ONLY);
+        $newfile = Path::join($this->subDir, 'newfile.txt');
+        $file->open();
+        $file->copy($newfile);
+        $this->assertFileExists($newfile);
+        $this->assertFileExists($this->newFile);
+        @unlink($newfile);
+    }
+
+    /** @test */
+    public function delete_a_file()
+    {
+        $file = new File($this->newFile, FILE::WRITE_ONLY);
+        $file->open();
+        $file->delete();
+        $file->close();
+        $this->assertFileNotExists($this->newFile);
     }
 }
