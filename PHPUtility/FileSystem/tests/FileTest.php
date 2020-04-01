@@ -31,7 +31,6 @@ class FileTest extends TestCase
         @unlink($this->nonExistingDir);
     }
 
-
     /** @test */
     public function construct_file_with_existing_and_mode()
     {
@@ -44,6 +43,21 @@ class FileTest extends TestCase
     {
         $this->expectException(FileDoesNotExistException::class);
         $file = new File($this->nonExistingFile, File::READ_ONLY);
+    }
+
+    /** @test */
+    public function is_child_of_path_info()
+    {
+        $file = new File($this->file);
+        $this->assertInstanceOf(\SplFileInfo::class, $file);
+    }
+
+    /** @test */
+    public function get_path_of_file()
+    {
+        $file = new File($this->file);
+        $this->assertEquals($this->file, (string) $file);
+        $this->assertEquals($this->file, $file->getFilePath());
     }
 
     /** @test */

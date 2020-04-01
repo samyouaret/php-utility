@@ -49,26 +49,18 @@ class FS
 
     public static function rename($path, $newPath)
     {
-        // $path = realpath($this->path);
         if (!file_exists($newPath))
             return rename($path, $newPath);
         return false;
     }
 
-    /* move a file or a entire dir using rename func */
-    public static function move($path, $newPath)
+    public static function create(string $path)
     {
-        return self::exists($path) && rename($path, $newPath . DIRECTORY_SEPARATOR . $path);
-    }
-
-    public  function create()
-    {
-        if (file_exists($this->path)) {
-            throw new \Exception("can't create <b>" . $this->path . "</b> File already exists");
-            return false;
+        if (file_exists($path)) {
+            throw new \Exception("can't create <b>" . $path . "</b> File already exists");
         }
-        var_dump($this->path);
-        $this->handle = \fopen($this->path, 'x');
+        var_dump($path);
+        return \fopen($path, 'x');
     }
 
     // public static function isLink(string $path): bool

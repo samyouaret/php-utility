@@ -6,6 +6,7 @@ namespace PHPUtility\FileSystem\Utilities;
 
 use PHPUtility\FileSystem\Exceptions\DirectoryDoesNotExistException;
 use PHPUtility\FileSystem\Exceptions\FileDoesNotExistException;
+use PHPUtility\FileSystem\Exceptions\FileException;
 use PHPUtility\FileSystem\Exceptions\InvalidModeException;
 use PHPUtility\FileSystem\Exceptions\PerformOperationOnClosedFileException;
 use PHPUtility\FileSystem\Utilities\Managable;
@@ -13,7 +14,7 @@ use PHPUtility\FileSystem\Utilities\Readable;
 use PHPUtility\FileSystem\Utilities\Writable;
 use PHPUtility\FileSystem\Utilities\Path;
 
-class File  implements Managable, Readable, Writable
+class File  extends \SplFileInfo implements Managable, Readable, Writable
 {
   //Open for reading only; place the file pointer at the beginning of the file. 
   public const READ_ONLY = 'r';
@@ -49,6 +50,7 @@ class File  implements Managable, Readable, Writable
     $this->ensureValidPathWithMode($path, $mode);
     $this->path = $path;
     $this->mode = $mode;
+    parent::__construct($path);
   }
 
   public  function open()
@@ -64,7 +66,10 @@ class File  implements Managable, Readable, Writable
     // here only write modes are able to reach
     throw new DirectoryDoesNotExistException("trying to open Non existing Directoy for write", 1);
   }
-
+  public function getFilePath()
+  {
+    return $this->path;
+  }
   public  function close(): bool
   {
     $bool = fclose($this->handle);
@@ -72,10 +77,11 @@ class File  implements Managable, Readable, Writable
     return $bool;
   }
 
-  public  function read(int $length = 0)
+  public  function read($length = NULL)
   {
     $this->ensureCanRead();
-    $length = $length > 0 ? $length : filesize($this->path);
+    $this->ensureReadLengthNotZero($length);
+    $length = $length === NULL ? filesize($this->path)  : $length;
     // file_get_contents is more efficient than fread
     return fread($this->handle, $length);
   }
@@ -126,17 +132,18 @@ class File  implements Managable, Readable, Writable
     return file_get_contents($this->path, $this->useIncludePath, $this->context);
   }
 
-  public  function readLine(int $length = 0)
+  public  function readLine($length = NULL)
   {
     $this->ensureCanRead();
-    $length = $length > 0 ? $length : filesize($this->path);
+    $this->ensureReadLengthNotZero($length);
+    $length = $length === NULL ? filesize($this->path)  : $length;
     return fgets($this->handle, $length);
   }
 
   public  function readLineAsync(int $length = 0)
   {
     $this->ensureCanRead();
-    $length = $length > 0 ? $length : filesize($this->path);
+    $this->ensureReadLengthNotZero($length);
     while (!feof($this->handle) && $chunk = fgets($this->handle, $length)) {
       $key = ftell($this->handle);
       yield $key => $chunk;
@@ -188,11 +195,18 @@ class File  implements Managable, Readable, Writable
     return file_put_contents($this->path, $data, $flags, $this->context);
   }
 
+  public  function flush(): bool
+  {
+    $this->ensureCanWrite();
+    return fflush($this->handle);
+  }
+
   /* move a file or a entire dir using rename func */
   public function moveTo(string $newPath): bool
   {
     return rename($this->path, $newPath, $this->context);
   }
+
   public function rename(string $newPath): bool
   {
     return rename($this->path, $newPath, $this->context);
@@ -309,10 +323,16 @@ class File  implements Managable, Readable, Writable
     }
   }
 
+  public function ensureReadLengthNotZero($length)
+  {
+    if ($length === 0) {
+      throw new FileException("length to read file cannot be 0", 1);
+    }
+  }
+
   public function ensureWriteMode()
   {
-    $nonWriteModes = ['r'];
-    if (in_array($this->mode, $nonWriteModes)) {
+    if ($this->mode == 'r') {
       throw new InvalidModeException("invalid Mode '$this->mode' provided to write file", 1);
     }
   }
