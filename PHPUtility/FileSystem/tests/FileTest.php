@@ -296,6 +296,18 @@ class FileTest extends TestCase
     }
 
     /** @test */
+    public function rename_a_file()
+    {
+        $file = new File($this->newFile, File::WRITE_ONLY);
+        $file->open();
+        $newfile = Path::join(Path::dirname($this->newFile), 'newfile.txt');
+        $file->rename($newfile);
+        $this->assertTrue($file->rename($newfile));
+        $this->assertFileExists($newfile);
+        @unlink($newfile);
+    }
+
+    /** @test */
     public function delete_a_file()
     {
         $file = new File($this->newFile, FILE::WRITE_ONLY);
