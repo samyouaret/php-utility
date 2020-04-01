@@ -6,6 +6,7 @@ require dirname(".", 2) . '/bootstrap.php';
 
 use PHPUnit\Framework\TestCase;
 use PHPUtility\FileSystem\Exceptions\DirectoryException;
+use PHPUtility\FileSystem\Exceptions\DirectoryExistsException;
 use PHPUtility\FileSystem\Exceptions\DirectoryNotExistException;
 use PHPUtility\FileSystem\Utilities\Directory;
 use PHPUtility\FileSystem\Utilities\Path;
@@ -21,6 +22,7 @@ class DirectoryTest extends TestCase
 
     protected function tearDown(): void
     {
+        @rmdir($this->nonExistingDir);
     }
 
     /** @test */
@@ -106,6 +108,24 @@ class DirectoryTest extends TestCase
     }
 
     /** @test */
+    public function move_dir_to_existing_path_throw_exception()
+    {
+        $this->expectException(DirectoryExistsException::class);
+        $newDir = new Directory($this->nonExistingDir);
+        $newDir->create();
+        $dir = new Directory($this->subDir);
+        $dir->moveTo($this->nonExistingDir);
+    }
+
+    /** @test */
+    public function move_non_existing_dir_throw_exception()
+    {
+        $this->expectException(DirectoryNotExistException::class);
+        $dir= new Directory($this->nonExistingDir);
+        $dir->moveTo('somepath');
+    }
+
+    /** @test */
     public function rename_a_dir()
     {
         $dir = new Directory($this->nonExistingDir);
@@ -115,6 +135,26 @@ class DirectoryTest extends TestCase
         $this->assertDirectoryExists($newPath);
         rmdir($newPath);
     }
+
+
+    /** @test */
+    public function rename_dir_to_existing_path_throw_exception()
+    {
+        $this->expectException(DirectoryExistsException::class);
+        $newDir = new Directory($this->nonExistingDir);
+        $newDir->create();
+        $dir = new Directory($this->subDir);
+        $dir->rename($this->nonExistingDir);
+    }
+
+    /** @test */
+    public function rename_non_existing_dir_throw_exception()
+    {
+        $this->expectException(DirectoryNotExistException::class);
+        $dir = new Directory($this->nonExistingDir);
+        $dir->rename('somepath');
+    }
+
 
     /** @test */
     public function delete_empty_dir()
@@ -135,7 +175,7 @@ class DirectoryTest extends TestCase
     }
 
     /** @test */
-    public function delete_non_empty_dir()
+    public function delete_non_empty_dir_using_force_delete_method()
     {
         $dir = new Directory($this->nonExistingDir);
         $dir->create();
@@ -144,5 +184,49 @@ class DirectoryTest extends TestCase
         @mkdir(Path::join($this->nonExistingDir, 'newDir'));
         $this->assertTrue($dir->forceDelete());
         $this->assertDirectoryNotExists($this->nonExistingDir);
+    }
+
+    /** @test */
+    public function delete_non_existing_dir_throw_error_with_force_delete()
+    {
+        $this->expectException(DirectoryNotExistException::class);
+        $dir = new Directory($this->nonExistingDir);
+        $dir->forceDelete();
+    }
+
+    /** @test */
+    public function copy_non_empty_dir()
+    {
+        $dir = new Directory($this->nonExistingDir);
+        $dir->create();
+        // make subdir new dir for test
+        @mkdir(Path::join($this->nonExistingDir, 'newDir'));
+        // create file in the test dir
+        @fopen(Path::join($this->nonExistingDir, 'newfile.txt'), 'w');
+        // get the new path
+        $newPath = Path::join($this->subDir, Path::basename($this->nonExistingDir));
+        $this->assertTrue($dir->copy($newPath));
+        $this->assertDirectoryExists($this->nonExistingDir);
+        $this->assertDirectoryExists($newPath);
+        $dir->forceDelete();
+        $newdir = new Directory($newPath);
+        $newdir->forceDelete();
+        $this->markTestIncomplete("symlinks are not tested");
+    }
+
+    /** @test */
+    public function copy_dir_throw_exception_when_target_dir_exists()
+    {
+        $this->expectException(DirectoryExistsException::class);
+        $dir = new Directory($this->dir);
+        $dir->copy($this->subDir);
+    }
+
+    /** @test */
+    public function copy_non_existing_dir_throw_exception()
+    {
+        $this->expectException(DirectoryNotExistException::class);
+        $dir = new Directory($this->nonExistingDir);
+        $dir->copy($this->subDir);
     }
 }

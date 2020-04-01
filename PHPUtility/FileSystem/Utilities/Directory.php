@@ -22,7 +22,7 @@ class Directory implements Managable, Readable
 
   public function open()
   {
-    $this->ensureIsdir();
+    $this->ensureDirExist($this->path);
     $this->handle = @opendir($this->path, $this->context);
     if (!$this->handle) {
       throw new DirectoryException("Cannot open directory $this->path due to permission restrictions,
@@ -70,23 +70,27 @@ class Directory implements Managable, Readable
 
   public  function moveTo(string $newPath): bool
   {
+    $this->ensureDirExist($this->path);
+    $this->ensureDirNotExist($newPath);
     return rename($this->path, $newPath, $this->context);
   }
 
   public  function rename(string $newPath): bool
   {
+    $this->ensureDirExist($this->path);
+    $this->ensureDirNotExist($newPath);
     return rename($this->path, $newPath, $this->context);
   }
 
   public  function delete(): bool
   {
-    $this->ensureIsdir();
+    $this->ensureDirExist($this->path);
     return @rmdir($this->path, $this->context);
   }
 
   public function forceDelete(): bool
   {
-    $this->ensureIsdir();
+    $this->ensureDirExist($this->path);
     return $this->remove_dir($this->path);
   }
 
@@ -105,13 +109,13 @@ class Directory implements Managable, Readable
       }
     }
     closedir($handle);
-    return rmdir($path);
+    return @rmdir($path);
   }
 
-  public  function copy(string $newPath): bool
+  public function copy(string $newPath): bool
   {
-    if (!file_exists($this->path))
-      return false;
+    $this->ensureDirExist($this->path);
+    $this->ensureDirNotExist($newPath);
     return $this->copy_dir($this->path, $newPath);
   }
 
@@ -119,32 +123,34 @@ class Directory implements Managable, Readable
   {
     $handle = opendir($src);
     @mkdir($des);
-    while (($file = readdir($handle)) !== false) {
-      if ($file == "." || $file == "..") {
-        continue;
-      }
-      $src = Path::join($src, $file);
-      $des = Path::join($des, $file);
-      if (is_dir($src)) {
-        return $this->copy_dir($src, $des);
-      } else {
-        return copy($src, $des);
+    while (($entry = readdir($handle)) !== false) {
+      if ($entry != "." && $entry != "..") {
+        $newSrc = Path::join($src, $entry);
+        $newDes = Path::join($des, $entry);
+        // Check for symlinks
+        if (is_link($newSrc)) {
+          return symlink(readlink($newSrc), $newDes);
+        }
+        if (is_dir($newSrc)) {
+          return $this->copy_dir($newSrc, $newDes);
+        } else {
+          return copy($newSrc, $newDes);
+        }
       }
     }
     closedir($handle);
+    return true;
   }
 
   function size()
   {
-
     if (file_exists($this->path))
       return $this->rec_size($this->path);
     return 0;
   }
 
-  function rec_size($path, $size = 0)
+  private function rec_size($path, $size = 0)
   {
-
     $handle = opendir($path);
 
     while (($file = readdir($handle)) !== false) {
@@ -162,54 +168,21 @@ class Directory implements Managable, Readable
     return $size;
   }
 
-  public function to_json()
+  public function ensureDirExist($path)
   {
-    return json_encode($this->to_array($this->path), true);
-  }
-
-  function to_array($path)
-  {
-    $dir = opendir($path);
-    $result = [];
-    static $limit = 0;
-
-    if ($limit == 300) {
-      return $result;
-    }
-
-    while ($file = readdir($dir)) {
-
-      if ($file == '.' || $file == '..') {
-        continue;
-      }
-
-      if (is_dir($path . '/' . $file)) {
-        $result[$path . '/' . $file]  = $this->to_array($path . '/' . $file);
-      } else {
-        $result["parent"][] = $file;
-      }
-      $limit++;
-    }
-
-    closedir($dir);
-    return $result;
-  }
-
-  public function ensureIsdir()
-  {
-    if (!is_dir($this->path)) {
-      throw new DirectoryNotExistException("Invalid path for given directory", 1);
+    if (!is_dir($path)) {
+      throw new DirectoryNotExistException("non existing Directory $path", 1);
     }
   }
 
-  public  function ensureDirNotExist()
+  public function ensureDirNotExist($path)
   {
-    if (!is_dir($this->path)) {
-      throw new DirectoryExistsException("Cannot Perform operation On existing Directory $this->path", 1);
+    if (is_dir($path)) {
+      throw new DirectoryExistsException("Cannot Perform operation On existing Directory $path", 1);
     }
   }
 
-  public  function ensureDirIsOpended()
+  public function ensureDirIsOpended()
   {
     if (!$this->isOpen()) {
       throw new DirectoryException('Direcoty is not open', 1);
