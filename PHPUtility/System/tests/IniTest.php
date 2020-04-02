@@ -104,6 +104,13 @@ class IniTest extends TestCase
     }
 
     /** @test */
+    public function parse_ini_file_throw_error_when_file_does_not_exist()
+    {
+        $this->expectException(IniException::class);
+        $this->assertEquals($this->config, Ini::parseFile('invalid-path/file.ini'));
+    }
+
+    /** @test */
     public function parse_ini_string()
     {
         $file = __DIR__ . DIRECTORY_SEPARATOR . 'dumbs/config.ini.php';

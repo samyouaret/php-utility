@@ -14,7 +14,7 @@ class MemoryTest extends TestCase
     /** @test */
     public function get_peak_usage()
     {
-        $this->assertEquals(memory_get_peak_usage(), Memory::peakUsage());
+        $this->assertGreaterThanOrEqual(memory_get_peak_usage(), Memory::peakUsage());
     }
     
     /** @test */
