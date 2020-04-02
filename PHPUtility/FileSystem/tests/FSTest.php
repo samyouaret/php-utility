@@ -50,7 +50,7 @@ class FSTest extends TestCase
     /** @test */
     public function convert_bytes_to_symbol_string()
     {
-        $this->assertEquals('10.00 MiB',FS::bytesTOSymbol(1024 * 1024 * 10));
-        $this->assertEquals('0.00 B',FS::bytesTOSymbol(0));
+        $this->assertEquals('10.00 MiB',FS::bytesToSymbol(1024 * 1024 * 10));
+        $this->assertEquals('0.00 B',FS::bytesToSymbol(0));
     }
 }

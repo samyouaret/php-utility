@@ -40,7 +40,7 @@ class FS
         return disk_total_space($path);
     }
 
-    public static function bytesTOSymbol(float $bytes): string
+    public static function bytesToSymbol(float $bytes): string
     {
         $symbols = array('B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB');
         $exp = $bytes ? floor(log($bytes) / log(1024)) : 0;
