@@ -75,4 +75,29 @@ class IniTest extends TestCase
         print_r($iniFiles);
         $this->assertEquals(php_ini_scanned_files(), join(',', $iniFiles));
     }
+
+    /** @test */
+    public function parse_ini_file()
+    {
+        $config = [
+            'first_section' => array(
+                'one' => 1,
+                'five' => 5,
+                'animal' => 'BIRD'
+            ),
+            'second_section' => array(
+                'path' => '/usr/local/bin',
+                'URL' => 'http://www.example.com/~username'
+            ),
+            'third_section' => array(
+                'phpversion' => [5.0, 5.1, 5.2, 5.3],
+                'urls' => array(
+                    'svn' => 'http://svn.php.net',
+                    'git' => 'http://git.php.net'
+                )
+            )
+        ];
+        $file = __DIR__ . DIRECTORY_SEPARATOR . 'dumbs/config.ini.php';
+        $this->assertEquals($config, Ini::parseFile($file));
+    }
 }

@@ -62,6 +62,14 @@ class Ini
         return explode(',', php_ini_scanned_files());
     }
 
+    public static function parseFile(string $file, $mode = INI_SCANNER_TYPED): array
+    {
+        if (!file_exists($file)) {
+            throw new IniException(" $file doesn't exist.  ", 1);
+        }
+        return parse_ini_file($file, true, $mode);
+    }
+
     private function throwException($extention)
     {
         throw new IniException(" extension $extention doesn't exist.  ", 1);
