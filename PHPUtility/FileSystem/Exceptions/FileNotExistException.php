@@ -2,6 +2,6 @@
 
 namespace PHPUtility\FileSystem\Exceptions;
 
-class InvalidModeException extends FileException
+class FileNotExistException extends FileException
 {
 }

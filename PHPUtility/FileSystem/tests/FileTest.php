@@ -5,8 +5,9 @@ namespace PHPUtility\FileSystem;
 require dirname(".", 2) . '/bootstrap.php';
 
 use PHPUnit\Framework\TestCase;
-use PHPUtility\FileSystem\Exceptions\DirectoryNotExistException;
-use PHPUtility\FileSystem\Exceptions\FileDoesNotExistException;
+use PHPUtility\FileSystem\Exceptions\FileException;
+use PHPUtility\FileSystem\Exceptions\FileExistsException;
+use PHPUtility\FileSystem\Exceptions\FileNotExistException;
 use PHPUtility\FileSystem\Exceptions\InvalidModeException;
 use PHPUtility\FileSystem\Exceptions\PerformOperationOnClosedFileException;
 use PHPUtility\FileSystem\Utilities\File;
@@ -17,18 +18,18 @@ class FileTest extends TestCase
     protected function setUp(): void
     {
         $this->dir = Path::join(__DIR__, 'dumbs');
-        $this->file = Path::join($this->dir, 'file.txt');
-        $this->nonEngFile = Path::join($this->dir, 'ملف.txt');
-        $this->newFile = Path::join($this->dir, 'newfile.txt');
         $this->subDir = Path::join($this->dir, 'subDir');
-        $this->nonExistingDir = Path::join($this->dir, 'invalid-path');
-        $this->nonExistingFile = Path::join($this->dir, 'invalid-path', 'newfile.txt');
+        $this->file = Path::join($this->dir, 'file.txt');
+        $this->newFile = Path::join($this->dir, 'newfile.txt');
+        $this->newSubFile = Path::join($this->subDir, 'newfile.txt');
+        $this->nonEngFile = Path::join($this->dir, 'ملف.txt');
     }
 
     protected function tearDown(): void
     {
+        @chmod($this->newFile, 0777);
         @unlink($this->newFile);
-        @unlink($this->nonExistingDir);
+        @unlink($this->newSubFile);
     }
 
     /** @test */
@@ -41,8 +42,8 @@ class FileTest extends TestCase
     /** @test */
     public function construct_file_with_non_existing_path_for_read()
     {
-        $this->expectException(FileDoesNotExistException::class);
-        $file = new File($this->nonExistingFile, File::READ_ONLY);
+        $this->expectException(FileNotExistException::class);
+        $file = new File($this->newSubFile, File::READ_ONLY);
     }
 
     /** @test */
@@ -63,8 +64,8 @@ class FileTest extends TestCase
     /** @test */
     public function construct_file_with_non_existing_path_for_write_should_not_throw_an_error()
     {
-        $file = new File($this->nonExistingFile, File::WRITE_ONLY);
-        $this->markTestIncomplete();
+        $file = new File($this->newSubFile, File::WRITE_ONLY);
+        $this->assertTrue($file->open());
     }
 
     /** @test */
@@ -83,17 +84,11 @@ class FileTest extends TestCase
     }
 
     /** @test */
-    public function open_file_with_non_existing_directory_for_write_create_a_new_file()
-    {
-        $file = new File($this->nonExistingDir, File::WRITE_ONLY);
-        $this->assertTrue($file->open());
-    }
-
-    /** @test */
     public function open_file_with_non_existing_file_in_non_existing_dir_for_write_throw_error()
     {
-        $this->expectException(DirectoryNotExistException::class);
-        $file = new File($this->nonExistingFile, File::WRITE_ONLY);
+        $this->expectException(FileNotExistException::class);
+        $nonExistingPath = Path::join($this->dir, 'invalid-path', 'newfile.txt');
+        $file = new File($nonExistingPath, File::WRITE_ONLY);
         $this->assertTrue($file->open());
     }
 
@@ -243,16 +238,6 @@ class FileTest extends TestCase
     }
 
     /** @test */
-    public function open_and_read_file_as_json()
-    {
-        $file = new File($this->file, File::READ_ONLY);
-        $content = file_get_contents($this->file);
-        $array = $file->asArray();
-        $result = join("", $array);
-        $this->assertEquals($content, $result);
-    }
-
-    /** @test */
     public function open_and_write_to_file()
     {
         $file = new File($this->newFile, File::WRITE_ONLY);
@@ -277,22 +262,53 @@ class FileTest extends TestCase
     {
         $file = new File($this->newFile, FILE::WRITE_ONLY);
         $file->open();
-        $newfile = Path::join($this->subDir, 'newfile.txt');
-        $file->moveTo($newfile);
-        $this->assertFileExists($newfile);
-        @unlink($newfile);
+        $file->moveTo($this->newSubFile);
+        $this->assertFileExists($this->newSubFile);
+    }
+
+    /** @test */
+    public function move_file_to_existing_path_throw_exception()
+    {
+        $this->expectException(FileExistsException::class);
+        $file = new File($this->newSubFile, FILE::WRITE_ONLY);
+        //create file
+        $file->open();
+        $file->moveTo($this->newSubFile);
+    }
+
+    /** @test */
+    public function move_non_existing_file_throw_exception()
+    {
+        $this->expectException(FileNotExistException::class);
+        $file = new File($this->newSubFile, FILE::WRITE_ONLY);
+        $file->moveTo($this->newSubFile);
     }
 
     /** @test */
     public function copy_a_file()
     {
         $file = new File($this->newFile, FILE::WRITE_ONLY);
-        $newfile = Path::join($this->subDir, 'newfile.txt');
         $file->open();
-        $file->copy($newfile);
-        $this->assertFileExists($newfile);
+        $file->copy($this->newSubFile);
+        $this->assertFileExists($this->newSubFile);
         $this->assertFileExists($this->newFile);
-        @unlink($newfile);
+    }
+
+    /** @test */
+    public function copy_non_existing_file_throw_exception()
+    {
+        $this->expectException(FileNotExistException::class);
+        $file = new File($this->newFile, FILE::WRITE_ONLY);
+        $file->copy($this->newSubFile);
+    }
+
+    /** @test */
+    public function copy_file_to_existing_file_throw_exception()
+    {
+        $this->expectException(FileExistsException::class);
+        $file = new File($this->newSubFile, FILE::WRITE_ONLY);
+        $file->open();
+        $file->copy($this->file);
     }
 
     /** @test */
@@ -300,11 +316,28 @@ class FileTest extends TestCase
     {
         $file = new File($this->newFile, File::WRITE_ONLY);
         $file->open();
-        $newfile = Path::join(Path::dirname($this->newFile), 'newfile.txt');
-        $file->rename($newfile);
+        $newfile = Path::join(Path::dirname($this->newFile), 'somefile.txt');
         $this->assertTrue($file->rename($newfile));
         $this->assertFileExists($newfile);
         @unlink($newfile);
+    }
+
+    /** @test */
+    public function rename_file_to_existing_path_throw_exception()
+    {
+        $this->expectException(FileExistsException::class);
+        $file = new File($this->newSubFile, FILE::WRITE_ONLY);
+        //create file
+        $file->open();
+        $file->rename($this->newSubFile);
+    }
+
+    /** @test */
+    public function rename_non_existing_file_throw_exception()
+    {
+        $this->expectException(FileNotExistException::class);
+        $file = new File($this->newSubFile, FILE::WRITE_ONLY);
+        $file->rename($this->newSubFile);
     }
 
     /** @test */
@@ -312,8 +345,22 @@ class FileTest extends TestCase
     {
         $file = new File($this->newFile, FILE::WRITE_ONLY);
         $file->open();
-        $file->delete();
         $file->close();
+        $file->delete();
         $this->assertFileNotExists($this->newFile);
+    }
+
+    /** @test */
+    public function delete_non_existing_file_throw_exception()
+    {
+        $this->expectException(FileNotExistException::class);
+        $file = new File($this->newSubFile, FILE::WRITE_ONLY);
+        $file->delete();
+    }
+
+    /** @test */
+    public function delete_should_throw_error_due_to_permission_restriction()
+    {
+        $this->markAsRisky();
     }
 }

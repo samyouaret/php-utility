@@ -2,6 +2,8 @@
 
 namespace PHPUtility\FileSystem\Exceptions;
 
-class DirectoryExistsException extends \Exception
+use PHPUtility\FileSystem\Exceptions\DirectoryException;
+
+class DirectoryExistsException extends DirectoryException
 {
 }

@@ -5,8 +5,9 @@
 namespace PHPUtility\FileSystem\Utilities;
 
 use PHPUtility\FileSystem\Exceptions\DirectoryNotExistException;
-use PHPUtility\FileSystem\Exceptions\FileDoesNotExistException;
+use PHPUtility\FileSystem\Exceptions\FileNotExistException;
 use PHPUtility\FileSystem\Exceptions\FileException;
+use PHPUtility\FileSystem\Exceptions\FileExistsException;
 use PHPUtility\FileSystem\Exceptions\InvalidModeException;
 use PHPUtility\FileSystem\Exceptions\PerformOperationOnClosedFileException;
 use PHPUtility\FileSystem\Utilities\Managable;
@@ -65,8 +66,9 @@ class File  extends \SplFileInfo implements Managable, Readable, Writable
       return true;
     }
     // here only write modes are able to reach
-    throw new DirectoryNotExistException("trying to open Non existing Directoy for write", 1);
+    throw new FileNotExistException("trying to open Non existing file for write", 1);
   }
+
   public function getFilePath()
   {
     return $this->path;
@@ -205,27 +207,31 @@ class File  extends \SplFileInfo implements Managable, Readable, Writable
   /* move a file or a entire dir using rename func */
   public function moveTo(string $newPath): bool
   {
+    $this->ensureFileExist($this->path);
+    $this->ensureFileNotExist($newPath);
     return rename($this->path, $newPath, $this->context);
   }
 
   public function rename(string $newPath): bool
   {
+    $this->ensureFileExist($this->path);
+    $this->ensureFileNotExist($newPath);
     return rename($this->path, $newPath, $this->context);
   }
 
   public  function copy(string $newPath): bool
   {
-    // $newPath = Path::join($newPath, $this->path);
-    if (file_exists($newPath)) {
-      throw new \Exception("target path $newPath File already exists");
-      return false;
-    }
+    $this->ensureFileExist($this->path);
+    $this->ensureFileNotExist($newPath);
     return @copy($this->path, $newPath);
   }
 
   public  function delete(): bool
   {
-    return unlink($this->path);
+    $this->ensureFileExist($this->path);
+    // if permissions are restricted php read as file does not exists
+
+    return !@unlink($this->path, $this->context);
   }
 
   public  function size()
@@ -283,6 +289,7 @@ class File  extends \SplFileInfo implements Managable, Readable, Writable
   public function ensureCanRead()
   {
     $this->ensureFileIsOpended();
+    $this->ensureFileExist($this->path);
     $this->ensureReadMode();
   }
 
@@ -344,7 +351,23 @@ class File  extends \SplFileInfo implements Managable, Readable, Writable
       ($mode == self::READ_ONLY || $mode == self::READ_AND_WRITE)
       && !Path::exists($path)
     ) {
-      throw new FileDoesNotExistException("trying to open non Existing File For Read", 1);
+      throw new FileNotExistException("trying to open non Existing File For Read", 1);
+    }
+  }
+
+
+  public function ensureFileExist($path)
+  {
+    if (!is_file($path)) {
+      throw new FileNotExistException("File $path does not exist or due to 
+      permissions restrictions.", 1);
+    }
+  }
+
+  public function ensureFileNotExist($path)
+  {
+    if (is_file($path)) {
+      throw new FileExistsException("Cannot Perform operation on existing file $path", 1);
     }
   }
 }
