@@ -70,6 +70,11 @@ class Ini
         return parse_ini_file($file, true, $mode);
     }
 
+    public static function parse(string $content, $mode = INI_SCANNER_TYPED): array
+    {
+        return parse_ini_string($content, true, $mode);
+    }
+
     private function throwException($extention)
     {
         throw new IniException(" extension $extention doesn't exist.  ", 1);
