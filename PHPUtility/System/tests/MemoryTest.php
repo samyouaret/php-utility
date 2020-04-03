@@ -1,6 +1,6 @@
 <?php
 
-namespace PHPUtility\String;
+namespace PHPUtility\System;
 
 
 require dirname(".", 2) . '/bootstrap.php';
